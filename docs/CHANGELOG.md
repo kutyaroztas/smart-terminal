@@ -1,5 +1,8 @@
 # Changelog
 
+## Unreleased
+- Agent handoff docs (AGENTS.md, docs/).
+
 ## 1.0 (2026-09)
 - Rename to Smart Terminal v1.0.
 - Scrollbar on every terminal.

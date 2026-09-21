@@ -1,6 +1,6 @@
 # HANDOFF — current state
 
-Updated: 2026-09-21. Branch `main` (docs added on `docs/agent-handoff`).
+Updated: 2026-09-21. Docs added via PR #1 (`docs/agent-handoff` → `main`); `main` is the source of truth after merge.
 
 ## State
 Smart Terminal v1.0 works; all features in `docs/CHANGELOG.md` shipped and pushed to

@@ -20,7 +20,7 @@ There is no automated test suite; UI is verified with scripted GTK runs + screen
 |---|---|
 | `terminal_buttons.py` | the whole app (~1500 lines); module map in `docs/architecture.md` |
 | `config/` | per-user `buttons.json` / `settings.json` — **personal, git-ignored, never commit** |
-| `assets/tab-icon.svg`, `terminal-buttons.svg` | tab icon, app icon |
+| `terminal-buttons.svg` (repo root), `assets/tab-icon.svg` | app icon, tab icon |
 | `docs/` | architecture, gotchas, testing, ADRs, HANDOFF, CHANGELOG |
 | `README.md` | end-user documentation (install/usage) — not developer notes |
 
