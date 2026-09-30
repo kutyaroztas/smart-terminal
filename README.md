@@ -8,7 +8,7 @@ Click a button and its command (or keystroke) is sent to the terminal you are wo
 
 ## What it is
 
-Smart Terminal (repository name: `terminal-buttons`) is a small GTK 3 application written in Python. It is a **wrapper around the
+Smart Terminal (repository name: `smart-terminal`) is a small GTK 3 application written in Python. It is a **wrapper around the
 [VTE](https://gitlab.gnome.org/GNOME/vte) terminal widget** (`Vte.Terminal`), the same widget that
 GNOME Terminal, Tilix, and many other Linux terminals use behind the scenes. The terminal
 emulation itself (colors, scrollback, mouse support, shell integration) is therefore identical to
@@ -68,9 +68,9 @@ monospace font.
 ## Installation and running
 
 ```bash
-git clone https://github.com/kutyaroztas/terminal-buttons.git
-cd terminal-buttons
-python3 terminal_buttons.py
+git clone https://github.com/kutyaroztas/smart-terminal.git
+cd smart-terminal
+python3 smart_terminal.py
 ```
 
 There is nothing to build. The app creates its `config/` folder on first start.
@@ -84,7 +84,7 @@ the project):
 [Desktop Entry]
 Type=Application
 Name=Smart Terminal
-Exec=python3 /path/to/terminal-buttons/terminal_buttons.py
+Exec=python3 /path/to/smart-terminal/smart_terminal.py
 Icon=terminal-buttons
 StartupWMClass=terminal-buttons
 Categories=System;TerminalEmulator;

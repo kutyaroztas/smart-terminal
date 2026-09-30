@@ -1,10 +1,10 @@
 # HANDOFF — current state
 
-Updated: 2026-09-21. Docs added via PR #1 (`docs/agent-handoff` → `main`); `main` is the source of truth after merge.
+Updated: 2026-09-30. Repo, local folder and main script renamed to `smart-terminal` / `smart_terminal.py` (branch `chore/rename-smart-terminal`); `main` is the source of truth after merge.
 
 ## State
 Smart Terminal v1.0 works; all features in `docs/CHANGELOG.md` shipped and pushed to
-https://github.com/kutyaroztas/terminal-buttons. Owner: Kutyar (writes Turkish, wants Turkish replies in chat).
+https://github.com/kutyaroztas/smart-terminal. Owner: Kutyar (writes Turkish, wants Turkish replies in chat).
 
 ## Next step
 Nothing mandatory pending. Candidate follow-ups (ask the owner before starting):
@@ -14,6 +14,7 @@ Nothing mandatory pending. Candidate follow-ups (ask the owner before starting):
 
 ## Known issues / unverified
 - Real-mouse interactions and file choosers untested by hand.
+- Icon (`terminal-buttons.svg`), app-id (`set_prgname`) and desktop file name intentionally keep the old name `terminal-buttons` (window matching / installed icon).
 - Only the desktop entry `~/.local/share/applications/terminal-buttons.desktop` (outside repo) carries `Name=Smart Terminal`.
 
 ## Pending owner decisions

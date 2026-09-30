@@ -1,4 +1,4 @@
-# AGENTS.md — Smart Terminal (repo: terminal-buttons)
+# AGENTS.md — Smart Terminal (repo: smart-terminal)
 
 Vendor-neutral entry point for any coding agent (Claude Code, Codex, Antigravity/Gemini, Cursor, Aider…).
 **Read `docs/HANDOFF.md` first** — it says where the last session stopped and what to do next.
@@ -9,8 +9,8 @@ configurable command buttons, split panes, themes, 5 UI languages. Single Python
 
 ## Run / check
 ```bash
-python3 terminal_buttons.py                    # run the app (needs python3-gi, gir1.2-vte-2.91, gir1.2-gtk-3.0)
-python3 -m py_compile terminal_buttons.py      # syntax check
+python3 smart_terminal.py                    # run the app (needs python3-gi, gir1.2-vte-2.91, gir1.2-gtk-3.0)
+python3 -m py_compile smart_terminal.py      # syntax check
 ```
 There is no automated test suite; UI is verified with scripted GTK runs + screenshots →
 `docs/testing.md`.
@@ -18,7 +18,7 @@ There is no automated test suite; UI is verified with scripted GTK runs + screen
 ## Repo map
 | Path | Purpose |
 |---|---|
-| `terminal_buttons.py` | the whole app (~1500 lines); module map in `docs/architecture.md` |
+| `smart_terminal.py` | the whole app (~1500 lines); module map in `docs/architecture.md` |
 | `config/` | per-user `buttons.json` / `settings.json` — **personal, git-ignored, never commit** |
 | `terminal-buttons.svg` (repo root), `assets/tab-icon.svg` | app icon, tab icon |
 | `docs/` | architecture, gotchas, testing, ADRs, HANDOFF, CHANGELOG |

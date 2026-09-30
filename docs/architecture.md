@@ -1,6 +1,6 @@
 # Architecture
 
-Single module `terminal_buttons.py`. Symbols below are stable anchors — grep for them
+Single module `smart_terminal.py`. Symbols below are stable anchors — grep for them
 (line numbers drift).
 
 ## Constants and data
