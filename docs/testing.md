@@ -6,11 +6,11 @@ and screenshot the window.
 ## Template
 ```python
 import sys, os, tempfile
-sys.path.insert(0, "/path/to/terminal-buttons")
+sys.path.insert(0, "/path/to/smart-terminal")
 import gi
 gi.require_version("Gtk","3.0"); gi.require_version("Gdk","3.0"); gi.require_version("Vte","2.91")
 from gi.repository import Gdk, GLib, Gtk
-import terminal_buttons as tb
+import smart_terminal as tb
 T = tempfile.mkdtemp()
 tb.SETTINGS_FILE = T + "/s.json"; tb.BUTTONS_FILE = T + "/b.json"   # never touch real config
 a = tb.App(); a.show_all()

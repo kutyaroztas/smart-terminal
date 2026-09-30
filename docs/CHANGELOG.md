@@ -1,6 +1,7 @@
 # Changelog
 
 ## Unreleased
+- Rename repo to `smart-terminal` and `terminal_buttons.py` to `smart_terminal.py`.
 - Agent handoff docs (AGENTS.md, docs/).
 
 ## 1.0 (2026-09)
