@@ -1520,6 +1520,7 @@ class App(Gtk.Window):
             write_json(BUTTONS_FILE, self.buttons)
         self.apply_language()
         self.apply_theme()
+        self.update_tray()
         self.rebuild_buttons()
         # Reopen the dialog so its widgets show the imported values
         parent.response(Gtk.ResponseType.CLOSE)

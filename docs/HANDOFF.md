@@ -18,5 +18,11 @@ Nothing mandatory pending. Candidate follow-ups (ask the owner before starting):
 - Icon (`terminal-buttons.svg`), app-id (`set_prgname`) and desktop file name intentionally keep the old name `terminal-buttons` (window matching / installed icon).
 - Only the desktop entry `~/.local/share/applications/terminal-buttons.desktop` (outside repo) carries `Name=Smart Terminal`.
 
+## Open work (PR 3 review nits, triaged)
+- If the tray library is installed but no tray host runs (GNOME AppIndicator extension off), "close to tray"/`--minimized` hide the window with no way back: check `org.kde.StatusNotifierWatcher` owner on D-Bus, else treat `indicator` as `None`.
+- `set_autostart`: also escape `\`, `%`, `$`, backtick in `Exec`; catch `OSError` and revert the checkbox.
+- Single-instance guard (Gio/Gtk.Application) + ADR.
+- Tray "Quit" could use `self.destroy()` instead of `Gtk.main_quit()` (consistency).
+
 ## Pending owner decisions
 None.

@@ -68,6 +68,7 @@ Optional, for the tray icon (minimize/close to tray):
 sudo apt install gir1.2-ayatanaappindicator3-0.1
 ```
 
+The autostart entry runs `smart_terminal.py --minimized` (start hidden in the tray); you can pass that flag yourself too.
 On GNOME the tray also needs the AppIndicator extension (Ubuntu ships `ubuntu-appindicators`).
 
 The default font is `Ubuntu Sans Mono`. If it is not installed, GTK falls back to another
