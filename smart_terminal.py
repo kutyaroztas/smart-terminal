@@ -6,6 +6,7 @@ import json
 import math
 import os
 import re
+import sys
 
 import gi
 
@@ -15,6 +16,12 @@ gi.require_version("Gtk", "3.0")
 gi.require_version("Vte", "2.91")
 from gi.repository import Gdk, GdkPixbuf, GLib, Gtk, Pango, Vte  # noqa: E402
 
+try:  # tray icon support is optional (gir1.2-ayatanaappindicator3-0.1)
+    gi.require_version("AyatanaAppIndicator3", "0.1")
+    from gi.repository import AyatanaAppIndicator3 as AppIndicator  # noqa: E402
+except (ValueError, ImportError):
+    AppIndicator = None
+
 APP_DIR = os.path.dirname(os.path.abspath(__file__))
 CONFIG_DIR = os.path.join(APP_DIR, "config")
 BUTTONS_FILE = os.path.join(CONFIG_DIR, "buttons.json")
@@ -22,6 +29,7 @@ SETTINGS_FILE = os.path.join(CONFIG_DIR, "settings.json")
 APP_NAME = "Smart Terminal"
 APP_VERSION = "1.0"
 ICON_FILE = os.path.join(APP_DIR, "terminal-buttons.svg")
+AUTOSTART_FILE = os.path.join(GLib.get_user_config_dir(), "autostart", "smart-terminal.desktop")
 TAB_ICON_FILE = os.path.join(APP_DIR, "assets", "tab-icon.svg")
 TAB_ICON_SIZE = 18
 FONT = "Ubuntu Sans Mono 13"
@@ -58,6 +66,8 @@ DEFAULT_SETTINGS = {
     "middle_paste": True,
     "paste_warning": True,
     "tab_hover_delay": 2.0,        # seconds of hovering before a tab is activated; 0 = off
+    "minimize_to_tray": False,     # minimizing the window hides it to the tray icon
+    "close_to_tray": False,        # closing the window hides it to the tray icon instead of quitting
     "group_order": [],             # button-group names, first = top of the drop-down and shown at start
     "shortcuts": DEFAULT_SHORTCUTS,
 }
@@ -112,6 +122,7 @@ STRINGS = {
         "export_settings": "Export settings…", "import_settings": "Import settings…",
         "import_bad": "This is not a valid settings file.",
         "json_files": "Settings files (*.json)",
+        "minimize_to_tray": "Minimize to tray", "close_to_tray": "Close button hides to tray", "autostart": "Start automatically at login", "tray_toggle": "Show / hide", "tray_quit": "Quit", "tray_missing": "Tray icons are not available (install gir1.2-ayatanaappindicator3-0.1)",
     },
     "de": {
         "new_tab": "Neuer Tab", "edit_buttons": "Schaltflächen bearbeiten", "group_order": "Gruppenreihenfolge",
@@ -144,6 +155,7 @@ STRINGS = {
         "export_settings": "Einstellungen exportieren…", "import_settings": "Einstellungen importieren…",
         "import_bad": "Das ist keine gültige Einstellungsdatei.",
         "json_files": "Einstellungsdateien (*.json)",
+        "minimize_to_tray": "In den Infobereich minimieren", "close_to_tray": "Schließen versteckt im Infobereich", "autostart": "Beim Anmelden automatisch starten", "tray_toggle": "Anzeigen / Verbergen", "tray_quit": "Beenden", "tray_missing": "Tray-Symbole nicht verfügbar (gir1.2-ayatanaappindicator3-0.1 installieren)",
     },
     "fr": {
         "new_tab": "Nouvel onglet", "edit_buttons": "Modifier les boutons", "group_order": "Ordre des groupes",
@@ -176,6 +188,7 @@ STRINGS = {
         "export_settings": "Exporter les paramètres…", "import_settings": "Importer les paramètres…",
         "import_bad": "Ce n'est pas un fichier de paramètres valide.",
         "json_files": "Fichiers de paramètres (*.json)",
+        "minimize_to_tray": "Réduire dans la zone de notification", "close_to_tray": "Fermer masque dans la zone de notification", "autostart": "Démarrer automatiquement à la connexion", "tray_toggle": "Afficher / masquer", "tray_quit": "Quitter", "tray_missing": "Icônes de notification indisponibles (installer gir1.2-ayatanaappindicator3-0.1)",
     },
     "tr": {
         "new_tab": "Yeni sekme", "edit_buttons": "Düğmeleri düzenle", "group_order": "Grup sırası",
@@ -207,6 +220,7 @@ STRINGS = {
         "export_settings": "Ayarları dışa aktar…", "import_settings": "Ayarları içe aktar…",
         "import_bad": "Bu geçerli bir ayar dosyası değil.",
         "json_files": "Ayar dosyaları (*.json)",
+        "minimize_to_tray": "Sistem tepsisine küçült", "close_to_tray": "Kapat düğmesi tepsiye gizlesin", "autostart": "Oturum açılışında otomatik başlat", "tray_toggle": "Göster / gizle", "tray_quit": "Çık", "tray_missing": "Tepsi simgesi kullanılamıyor (gir1.2-ayatanaappindicator3-0.1 kurun)",
     },
     "ru": {
         "new_tab": "Новая вкладка", "edit_buttons": "Изменить кнопки", "group_order": "Порядок групп",
@@ -239,6 +253,7 @@ STRINGS = {
         "export_settings": "Экспорт настроек…", "import_settings": "Импорт настроек…",
         "import_bad": "Это не файл настроек.",
         "json_files": "Файлы настроек (*.json)",
+        "minimize_to_tray": "Сворачивать в трей", "close_to_tray": "Кнопка закрытия скрывает в трей", "autostart": "Запускать автоматически при входе", "tray_toggle": "Показать / скрыть", "tray_quit": "Выход", "tray_missing": "Значки в трее недоступны (установите gir1.2-ayatanaappindicator3-0.1)",
     },
 }
 
@@ -319,6 +334,8 @@ def normalize_settings(saved):
         settings["lang"] = DEFAULT_SETTINGS["lang"]
     if settings["rightclick_action"] not in ("menu", "putty"):
         settings["rightclick_action"] = "menu"
+    for key in ("minimize_to_tray", "close_to_tray"):
+        settings[key] = bool(settings[key])
     order = settings["group_order"]
     settings["group_order"] = [g for g in order if isinstance(g, str)] if isinstance(order, list) else []
     return settings
@@ -498,11 +515,93 @@ class App(Gtk.Window):
 
         self.connect("key-press-event", self.on_key)
         self.connect("destroy", Gtk.main_quit)
+        self.connect("delete-event", self.on_delete)
+        self.connect("window-state-event", self.on_window_state)
+        self.connect("show", lambda *_: self.update_tray())
+        self.connect("hide", lambda *_: self.update_tray())
+        self.indicator = self.build_indicator()
 
         self.apply_language()
         self.rebuild_buttons()
         self.new_tab()
         self.apply_theme()
+
+    # --- tray / autostart ---
+    def build_indicator(self):
+        if AppIndicator is None:
+            return None
+        ind = AppIndicator.Indicator.new_with_path(
+            "smart-terminal", "terminal-buttons", AppIndicator.IndicatorCategory.APPLICATION_STATUS,
+            APP_DIR)
+        menu = Gtk.Menu()
+        self.tray_item = Gtk.MenuItem()
+        self.tray_item.connect("activate", lambda *_: self.toggle_window())
+        self.quit_item = Gtk.MenuItem()
+        self.quit_item.connect("activate", lambda *_: Gtk.main_quit())
+        for item in (self.tray_item, self.quit_item):
+            menu.append(item)
+        menu.show_all()
+        ind.set_menu(menu)
+        ind.set_secondary_activate_target(self.tray_item)  # middle click
+        ind.set_title(APP_NAME)
+        self.indicator = ind
+        self.update_tray()
+        return ind
+
+    def update_tray(self):
+        """The icon is only shown while a tray option is on (or the window is hidden in it)."""
+        if self.indicator:
+            wanted = (self.settings["minimize_to_tray"] or self.settings["close_to_tray"]
+                      or not self.get_visible())
+            self.indicator.set_status(AppIndicator.IndicatorStatus.ACTIVE if wanted
+                                      else AppIndicator.IndicatorStatus.PASSIVE)
+
+    def toggle_window(self):
+        if self.get_visible() and not self.is_minimized():
+            self.hide()
+        else:
+            self.show_window()
+
+    def show_window(self):
+        self.show_all()
+        self.deiconify()
+        self.present()
+
+    def is_minimized(self):
+        win = self.get_window()
+        return bool(win and win.get_state() & Gdk.WindowState.ICONIFIED)
+
+    def on_delete(self, *_):
+        if self.indicator and self.settings["close_to_tray"]:
+            self.hide()
+            return True
+        return False
+
+    def on_window_state(self, _w, event):
+        if (self.indicator and self.settings["minimize_to_tray"]
+                and event.changed_mask & Gdk.WindowState.ICONIFIED
+                and event.new_window_state & Gdk.WindowState.ICONIFIED):
+            GLib.idle_add(self.hide)
+
+    @staticmethod
+    def autostart_enabled():
+        return os.path.exists(AUTOSTART_FILE)
+
+    @staticmethod
+    def set_autostart(enabled):
+        if not enabled:
+            try:
+                os.remove(AUTOSTART_FILE)
+            except FileNotFoundError:
+                pass
+            return
+        script = os.path.join(APP_DIR, "smart_terminal.py").replace('"', '\\"')
+        os.makedirs(os.path.dirname(AUTOSTART_FILE), exist_ok=True)
+        with open(AUTOSTART_FILE, "w", encoding="utf-8") as f:
+            f.write("[Desktop Entry]\nType=Application\n"
+                    f"Name={APP_NAME}\nComment=Terminal with command buttons\n"
+                    f'Exec=python3 "{script}" --minimized\n'
+                    "Icon=terminal-buttons\nX-GNOME-Autostart-enabled=true\n")
 
     @staticmethod
     def icon_button(icon_names, fallback_label):
@@ -529,6 +628,9 @@ class App(Gtk.Window):
             button.set_tooltip_text(self.tip(action))
         self.edit_btn.set_tooltip_text(self.tr("edit_buttons"))
         self.settings_btn.set_tooltip_text(self.tr("settings"))
+        if self.indicator:
+            self.tray_item.set_label(self.tr("tray_toggle"))
+            self.quit_item.set_label(self.tr("tray_quit"))
 
     def apply_theme(self):
         theme = THEMES[self.settings["theme"]]
@@ -1334,6 +1436,21 @@ class App(Gtk.Window):
             check.connect("toggled", lambda c, k=key: self.set_setting(k, c.get_active()))
             grid.attach(check, 0, row, 2, 1)
             row += 1
+        for key in ("minimize_to_tray", "close_to_tray"):
+            check = Gtk.CheckButton(label=self.tr(key))
+            check.set_active(self.settings[key])
+            check.connect("toggled", lambda c, k=key: (self.set_setting(k, c.get_active()),
+                                                       self.update_tray()))
+            if self.indicator is None:
+                check.set_sensitive(False)
+                check.set_tooltip_text(self.tr("tray_missing"))
+            grid.attach(check, 0, row, 2, 1)
+            row += 1
+        auto = Gtk.CheckButton(label=self.tr("autostart"))
+        auto.set_active(self.autostart_enabled())
+        auto.connect("toggled", lambda c: self.set_autostart(c.get_active()))
+        grid.attach(auto, 0, row, 2, 1)
+        row += 1
 
         hover = Gtk.SpinButton.new_with_range(0, 30, 0.5)
         hover.set_value(self.settings["tab_hover_delay"])
@@ -1523,7 +1640,15 @@ def main():
         pass
     if not os.path.exists(BUTTONS_FILE):
         write_json(BUTTONS_FILE, DEFAULT_BUTTONS)
-    App().show_all()
+    app = App()
+    if "--minimized" in sys.argv:
+        if app.indicator:
+            app.indicator.set_status(AppIndicator.IndicatorStatus.ACTIVE)  # window stays hidden in the tray
+        else:
+            app.show_all()
+            app.iconify()
+    else:
+        app.show_all()
     Gtk.main()
 
 

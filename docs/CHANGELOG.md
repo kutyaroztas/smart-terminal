@@ -1,6 +1,8 @@
 # Changelog
 
 ## Unreleased
+- Tray icon (optional, AyatanaAppIndicator3): minimize to tray, close button hides to tray, show/hide + quit menu.
+- "Start automatically at login" setting (XDG autostart entry, `--minimized`).
 - Rename repo to `smart-terminal` and `terminal_buttons.py` to `smart_terminal.py`.
 - Agent handoff docs (AGENTS.md, docs/).
 
