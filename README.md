@@ -62,6 +62,15 @@ On Ubuntu and Debian:
 sudo apt install python3-gi gir1.2-gtk-3.0 gir1.2-vte-2.91
 ```
 
+Optional, for the tray icon (minimize/close to tray):
+
+```bash
+sudo apt install gir1.2-ayatanaappindicator3-0.1
+```
+
+The autostart entry runs `smart_terminal.py --minimized` (start hidden in the tray); you can pass that flag yourself too.
+On GNOME the tray also needs the AppIndicator extension (Ubuntu ships `ubuntu-appindicators`).
+
 The default font is `Ubuntu Sans Mono`. If it is not installed, GTK falls back to another
 monospace font.
 
@@ -172,7 +181,9 @@ Examples:
 Click the gear icon at the bottom right.
 
 - **General:** theme, language, right-click action, copy on select, middle-click paste, multiline
-  paste warning, tab hover delay (seconds, `0` turns it off), a shortcut to the button editor, and
+  paste warning, **minimize to tray**, **close button hides to tray**, **start automatically at
+  login** (writes `~/.config/autostart/smart-terminal.desktop`, starts hidden in the tray when the tray
+  is available, otherwise minimized), tab hover delay (seconds, `0` turns it off), a shortcut to the button editor, and
   **Export settings…** / **Import settings…**.
 - **Shortcuts:** click a shortcut, then press the new key combination. `Esc` cancels, `Backspace`
   removes the shortcut. If the combination is already used by another action, it is taken over
@@ -211,7 +222,7 @@ Everything is stored next to the program in `config/`:
 | File | Content |
 | --- | --- |
 | `config/buttons.json` | Your buttons: label, command, enter, group, color |
-| `config/settings.json` | Theme, language, mouse options, hover delay, group order, shortcuts |
+| `config/settings.json` | Theme, language, mouse options, tray options, hover delay, group order, shortcuts |
 
 Both files are plain JSON and can be edited by hand while the app is closed. They are listed in
 `.gitignore`, so your personal setup is never committed by accident. If a file is missing or

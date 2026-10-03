@@ -31,6 +31,9 @@ Helpers: `pane_unit(term)` (terminal → its Pane), `is_open(term)`, `terminals(
 ## App responsibilities (grouped)
 - **Setup/theme/lang:** `__init__`, `apply_language`, `apply_theme` (CSS provider, `.tb-root`,
   `.tb-panehead`, `.tb-tabclose`), `style_terminal`, `restyle_terminals`, `tr`.
+- **Tray/autostart:** `build_indicator`, `update_tray`, `toggle_window/show_window`, `on_delete`,
+  `on_window_state` (minimize → hide), `autostart_enabled/set_autostart`; `AppIndicator` is `None` when
+  the library is missing (tray options are then disabled). CLI flag `--minimized` (see `main`).
 - **Tabs:** `new_tab`, `clone_tab`, `close_page`, `tab_icon`, `tab_enter/leave/hover_switch`
   (hover-to-activate), `tab_click` (middle/right), `strip_click` (double-click empty strip → new tab),
   `rename_tab`, `update_title`, `page_of`, `current`.

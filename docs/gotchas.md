@@ -12,4 +12,6 @@
   so `print(..., flush=True)` first.
 - **Tests: after Pane wrapping `term.get_parent()` is the body Box** → use `tb.pane_unit(term)`.
 - **Dialog button lookup** → `get_children()[-1]` is the dialog's ButtonBox; search recursively by label.
+- **Tray: `AppIndicator3` import fails** → Ubuntu 24.04+ ships only `AyatanaAppIndicator3` (`gir1.2-ayatanaappindicator3-0.1`); import is optional, tray features degrade to off.
+- **Tests: `iconify()` never fires ICONIFIED in the sandbox session** → test `on_window_state` with a fake event (`changed_mask/new_window_state`).
 - **Personal config in repo** → `config/` is git-ignored; never `git add -f` it.
