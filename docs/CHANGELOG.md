@@ -1,6 +1,6 @@
 # Changelog
 
-## Unreleased
+## [Unreleased]
 - Tray icon (optional, AyatanaAppIndicator3): minimize to tray, close button hides to tray, show/hide + quit menu.
 - "Start automatically at login" setting (XDG autostart entry, `--minimized`).
 - Rename repo to `smart-terminal` and `terminal_buttons.py` to `smart_terminal.py`.
@@ -16,3 +16,8 @@
 - Penguin icon on each tab; dark gray title bar in all themes.
 - Initial release: tabs, split panes, command buttons with groups/colors, themes, 5 languages,
   configurable shortcuts, search, paste warning, settings import/export.
+
+## [0.1.0] — 2026-09-19
+### Added
+- Geçmiş: kit öncesi çalışma
+Credits: Design: Claude Sonnet 5.5 (Claude Code) · Review: Claude Opus (pingpong) · Impl: Claude Sonnet 5.5 (Claude Code) · UAT: Kutyar

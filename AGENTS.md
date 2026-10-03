@@ -49,3 +49,15 @@ There is no automated test suite; UI is verified with scripted GTK runs + screen
 Put one line in the commit/PR body: `Docs: up to date (…)` or `Docs: no change needed (…)`.
 General rules live in the owner's `~/.claude/reference/agentic-development-rules.md`
 (summary above is the repo-local copy so non-Claude agents follow it too).
+
+<!-- changelog-std:begin -->
+## Changelog & Credits
+- Tek yaşayan kayıt: `docs/CHANGELOG.md` (Keep a Changelog). İş bitince (bug fix dahil) kendi girdini `[Unreleased]`'e ekle; push/merge öncesi.
+- Her bölümün (`[Unreleased]` veya `[X.Y.Z]`) sonunda TEK satır: `Credits: Design: … · Review: … · Impl: … · Test: … · UAT: …`
+  - Roller: `Spec`, `Design`, `Review`, `Impl`, `Test`, `UAT`. Uygulanmayan rol yazılmaz. Biçim: `Rol: Model (araç)`; farklı agent'ın tek maddesi için madde sonuna `(Impl: X)`.
+  - Kendi modelini YALNIZ sistem istemi/harness açıkça veriyorsa yaz; bilmiyorsan `?` bırak (insan düzeltir). Tahmin etme.
+  - Paralel branch'lerde `[Unreleased]` çakışırsa merge eden birleştirir.
+- Sürüm: SemVer, `0.MINOR.PATCH` ile başla; `1.0.0` = günlük güvenle kullanılıyor, arayüz kolay değişmeyecek. Mevcut sürümü ≥1.0 olan repo düşürülmez.
+  Fix→PATCH, özellik→MINOR, kırıcı→(0.x'te) MINOR + "Changed". Sürüm UAT geçince ve Unreleased boş değilse.
+- Elle sürüm: `[Unreleased]` başlığını `[X.Y.Z] — YYYY-AA-GG` yap, üste boş `[Unreleased]` ekle, commit, `git tag vX.Y.Z`, `git push --tags`; istenirse `gh release create vX.Y.Z --notes-file …` (zorunlu değil).
+<!-- changelog-std:end -->
