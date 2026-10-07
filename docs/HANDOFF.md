@@ -1,6 +1,6 @@
 # HANDOFF — current state
 
-Updated: 2026-10-07. Tab icon background orange → blue (`assets/tab-icon.svg`). Before: 2026-10-03. Added tray (minimize/close to tray) + autostart settings (branch `feat/tray-autostart`). Earlier: 2026-09-30. Repo, local folder and main script renamed to `smart-terminal` / `smart_terminal.py` (branch `chore/rename-smart-terminal`); `main` is the source of truth after merge.
+Updated: 2026-10-07. App icon (`terminal-buttons.svg`) purple → blue; installed copy in `~/.local/share/icons` must be refreshed. Before: 2026-10-03. Added tray (minimize/close to tray) + autostart settings (branch `feat/tray-autostart`). Earlier: 2026-09-30. Repo, local folder and main script renamed to `smart-terminal` / `smart_terminal.py` (branch `chore/rename-smart-terminal`); `main` is the source of truth after merge.
 
 ## State
 Smart Terminal v1.0 works; all features in `docs/CHANGELOG.md` shipped and pushed to
