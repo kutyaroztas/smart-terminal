@@ -798,11 +798,25 @@ class App(Gtk.Window):
         term.connect("child-exited", lambda t, _status: self.close_pane(t))
         term.connect("focus-in-event", self.on_terminal_focus)
         term.connect("key-press-event", lambda t, ev: self.handle_shortcut(ev, t))
-        term.match_add_regex(Vte.Regex.new_for_match(
-            PATH_PATTERN, -1, PCRE2_UTF | PCRE2_UCP | PCRE2_MULTILINE), 0)
+        self.apply_path_match(term)
         term.connect("button-press-event", self.term_click)
         term.connect("button-release-event", self.term_release)
         return term
+
+    def apply_path_match(self, term):
+        """Path regex (hover underline) exists only while Ctrl+click is enabled."""
+        tag = getattr(term, "path_tag", None)
+        if self.settings["ctrl_click_open"] and tag is None:
+            term.path_tag = term.match_add_regex(Vte.Regex.new_for_match(
+                PATH_PATTERN, -1, PCRE2_UTF | PCRE2_UCP | PCRE2_MULTILINE), 0)
+        elif not self.settings["ctrl_click_open"] and tag is not None:
+            term.match_remove(tag)
+            term.path_tag = None
+
+    def refresh_path_matches(self):
+        for i in range(self.nb.get_n_pages()):
+            for term in terminals(self.nb.get_nth_page(i).root()):
+                self.apply_path_match(term)
 
     def new_tab(self, cwd=None, position=-1, title=None):
         page = Page()
@@ -1646,6 +1660,7 @@ class App(Gtk.Window):
             return
         self.settings = normalize_settings(data["settings"])
         self.save_settings()
+        self.refresh_path_matches()
         if buttons is not None:
             for b in buttons:
                 b.setdefault("enter", False)
@@ -1738,6 +1753,8 @@ class App(Gtk.Window):
     def set_setting(self, key, value):
         self.settings[key] = value
         self.save_settings()
+        if key == "ctrl_click_open":
+            self.refresh_path_matches()
 
     def on_theme_changed(self, combo):
         self.set_setting("theme", combo.get_active_id())

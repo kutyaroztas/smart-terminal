@@ -217,6 +217,19 @@ class AppCtrlClick(unittest.TestCase):
         self.assertFalse(self.click("notes.txt"))
         self.assertEqual(self.app.opened, [])
 
+    def test_hover_underline_follows_setting(self):
+        self.term.feed(b"\r\nnotes.txt")
+        pump(0.3)
+        def underlined():
+            return any(self.term.match_check(0, r)[0] for r in range(self.term.get_row_count()))
+        self.assertTrue(underlined())
+        self.app.set_setting("ctrl_click_open", False)
+        try:
+            self.assertFalse(underlined())
+        finally:
+            self.app.set_setting("ctrl_click_open", True)
+        self.assertTrue(underlined())
+
     def test_folder_ignored_while_program_runs(self):
         self.term.feed_child(b"sleep 30\n")
         self.assertTrue(pump(3, lambda: not tb.shell_in_foreground(self.term)))

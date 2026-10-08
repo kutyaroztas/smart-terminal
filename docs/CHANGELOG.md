@@ -2,6 +2,7 @@
 
 ## [Unreleased]
 - Ctrl+click on a folder name in the terminal enters it in the same tab and lists it (`cd … && ll`, only at the shell prompt); on a file opens it in the default application for its type (text → default editor, jpg → image viewer, …). Names with spaces are supported. Setting `ctrl_click_open` (default on).
+- Fix: with "Ctrl+click opens …" turned off, file/folder names are no longer underlined on hover (the path match regex is removed/re-added when the setting changes, also on settings import).
 - Tests: `tests/test_ctrl_click.py` (unittest, scripted real `App` run).
 - Mouse actions: new right-click action "paste" (always pastes the clipboard) and `middle_action` setting (paste / context menu / nothing) replacing the `middle_paste` checkbox (migrated automatically). Defaults unchanged.
 - App (desktop) icon body recolored from purple to blue (`terminal-buttons.svg`).
