@@ -9,8 +9,7 @@
 - "Start automatically at login" setting (XDG autostart entry, `--minimized`).
 - Rename repo to `smart-terminal` and `terminal_buttons.py` to `smart_terminal.py`.
 - Agent handoff docs (AGENTS.md, docs/).
-Credits: Design: Claude Sonnet 5.5 (Claude Code) · Impl: Claude Sonnet 5.5 (Claude Code) · Test: Claude Sonnet 5.5 (Claude Code) · UAT: Kutyar
-Credits: Impl: Claude Sonnet 5.5 (Claude Code; Ctrl+click: ?) · Review: pingpong-reviewer agent (mouse actions) · Test: Claude Sonnet 5.5 (Claude Code, Xvfb) · UAT: Kutyar
+Credits: Design: Claude Sonnet 5.5 (Claude Code) · Review: pingpong-reviewer agent (mouse actions) · Impl: Claude Sonnet 5.5 (Claude Code) · Test: Claude Sonnet 5.5 (Claude Code, Xvfb) · UAT: Kutyar
 
 ## 1.0 (2026-09)
 - Rename to Smart Terminal v1.0.
