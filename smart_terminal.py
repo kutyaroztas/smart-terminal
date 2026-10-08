@@ -6,6 +6,7 @@ import json
 import math
 import os
 import re
+import shlex
 import sys
 
 import gi
@@ -14,7 +15,7 @@ gi.require_version("Gdk", "3.0")
 gi.require_version("GdkPixbuf", "2.0")
 gi.require_version("Gtk", "3.0")
 gi.require_version("Vte", "2.91")
-from gi.repository import Gdk, GdkPixbuf, GLib, Gtk, Pango, Vte  # noqa: E402
+from gi.repository import Gdk, GdkPixbuf, GLib, Gio, Gtk, Pango, Vte  # noqa: E402
 
 try:  # tray icon support is optional (gir1.2-ayatanaappindicator3-0.1)
     gi.require_version("AyatanaAppIndicator3", "0.1")
@@ -58,12 +59,15 @@ DEFAULT_SHORTCUTS = {
     "copy": "<Ctrl><Shift>c",
     "paste": "<Ctrl><Shift>v",
 }
+RIGHTCLICK_ACTIONS = ("menu", "putty", "paste")
+MIDDLE_ACTIONS = ("paste", "menu", "none")
 DEFAULT_SETTINGS = {
     "theme": "aubergine",
     "lang": "en",
-    "rightclick_action": "menu",   # "menu" = context menu, "putty" = copy selection / paste
+    "rightclick_action": "menu",   # "menu" = context menu, "putty" = copy selection / paste, "paste" = always paste
     "copy_on_select": False,
-    "middle_paste": True,
+    "middle_action": "paste",      # "paste" = paste the primary selection, "menu" = context menu, "none"
+    "ctrl_click_open": True,       # Ctrl+click on a path: folder -> cd, text file -> default editor
     "paste_warning": True,
     "tab_hover_delay": 2.0,        # seconds of hovering before a tab is activated; 0 = off
     "minimize_to_tray": False,     # minimizing the window hides it to the tray icon
@@ -112,7 +116,9 @@ STRINGS = {
         "tab_general": "General", "tab_shortcuts": "Shortcuts",
         "rightclick_action": "Right-click action", "rc_menu": "Context menu",
         "rc_putty": "Copy / paste (PuTTY style)",
-        "copy_on_select": "Copy on select", "middle_paste": "Middle-click pastes",
+        "copy_on_select": "Copy on select", "rc_paste": "Right-click pastes",
+        "middle_action": "Middle-click action", "mc_paste": "Paste selection", "mc_menu": "Context menu", "mc_none": "Nothing",
+        "ctrl_click_open": "Ctrl+click opens folders and text files",
         "paste_warning": "Warn before pasting multiple lines",
         "paste_lines": "Paste {n} lines into terminal?",
         "press_shortcut": "Press the new shortcut… (Esc cancels, Backspace clears)",
@@ -144,7 +150,9 @@ STRINGS = {
         "tab_general": "Allgemein", "tab_shortcuts": "Tastenkürzel",
         "rightclick_action": "Rechtsklick-Aktion", "rc_menu": "Kontextmenü",
         "rc_putty": "Kopieren / Einfügen (PuTTY-Stil)",
-        "copy_on_select": "Beim Auswählen kopieren", "middle_paste": "Mittelklick fügt ein",
+        "copy_on_select": "Beim Auswählen kopieren", "rc_paste": "Rechtsklick fügt ein",
+        "middle_action": "Mittelklick-Aktion", "mc_paste": "Auswahl einfügen", "mc_menu": "Kontextmenü", "mc_none": "Nichts",
+        "ctrl_click_open": "Strg+Klick öffnet Ordner und Textdateien",
         "paste_warning": "Vor dem Einfügen mehrerer Zeilen warnen",
         "paste_lines": "{n} Zeilen in das Terminal einfügen?",
         "press_shortcut": "Neues Tastenkürzel drücken … (Esc bricht ab, Rücktaste löscht)",
@@ -177,7 +185,9 @@ STRINGS = {
         "tab_general": "Général", "tab_shortcuts": "Raccourcis",
         "rightclick_action": "Action du clic droit", "rc_menu": "Menu contextuel",
         "rc_putty": "Copier / coller (style PuTTY)",
-        "copy_on_select": "Copier à la sélection", "middle_paste": "Le clic milieu colle",
+        "copy_on_select": "Copier à la sélection", "rc_paste": "Le clic droit colle",
+        "middle_action": "Action du clic milieu", "mc_paste": "Coller la sélection", "mc_menu": "Menu contextuel", "mc_none": "Rien",
+        "ctrl_click_open": "Ctrl+clic ouvre dossiers et fichiers texte",
         "paste_warning": "Avertir avant de coller plusieurs lignes",
         "paste_lines": "Coller {n} lignes dans le terminal ?",
         "press_shortcut": "Appuyez sur le nouveau raccourci… (Échap annule, Retour arrière efface)",
@@ -209,7 +219,9 @@ STRINGS = {
         "tab_general": "Genel", "tab_shortcuts": "Kısayollar",
         "rightclick_action": "Sağ tık eylemi", "rc_menu": "Bağlam menüsü",
         "rc_putty": "Kopyala / yapıştır (PuTTY tarzı)",
-        "copy_on_select": "Seçince kopyala", "middle_paste": "Orta tık yapıştırır",
+        "copy_on_select": "Seçince kopyala", "rc_paste": "Sağ tık yapıştırır",
+        "middle_action": "Orta tık eylemi", "mc_paste": "Seçimi yapıştır", "mc_menu": "Bağlam menüsü", "mc_none": "Hiçbir şey",
+        "ctrl_click_open": "Ctrl+tık klasör ve metin dosyası açar",
         "paste_warning": "Çok satırlı yapıştırmadan önce uyar",
         "paste_lines": "Terminale {n} satır yapıştırılsın mı?",
         "press_shortcut": "Yeni kısayola bas… (Esc iptal, Backspace siler)",
@@ -242,7 +254,9 @@ STRINGS = {
         "tab_general": "Общие", "tab_shortcuts": "Горячие клавиши",
         "rightclick_action": "Действие правой кнопки", "rc_menu": "Контекстное меню",
         "rc_putty": "Копировать / вставлять (как в PuTTY)",
-        "copy_on_select": "Копировать при выделении", "middle_paste": "Средняя кнопка вставляет",
+        "copy_on_select": "Копировать при выделении", "rc_paste": "Правая кнопка вставляет",
+        "middle_action": "Действие средней кнопки", "mc_paste": "Вставить выделение", "mc_menu": "Контекстное меню", "mc_none": "Ничего",
+        "ctrl_click_open": "Ctrl+клик открывает папки и текстовые файлы",
         "paste_warning": "Предупреждать при вставке нескольких строк",
         "paste_lines": "Вставить {n} строк в терминал?",
         "press_shortcut": "Нажмите новую комбинацию… (Esc — отмена, Backspace — очистить)",
@@ -320,6 +334,9 @@ def normalize_settings(saved):
         saved = {}
     if saved.pop("rightclick_copy", False) and "rightclick_action" not in saved:
         saved["rightclick_action"] = "putty"  # migrate the old checkbox
+    middle_paste = saved.pop("middle_paste", None)  # migrate the old checkbox
+    if middle_paste is not None and "middle_action" not in saved:
+        saved["middle_action"] = "paste" if middle_paste else "none"
     settings = dict(DEFAULT_SETTINGS)
     settings.update(saved)
     shortcuts = saved.get("shortcuts")
@@ -332,9 +349,11 @@ def normalize_settings(saved):
         settings["theme"] = DEFAULT_SETTINGS["theme"]
     if settings["lang"] not in LANGS:
         settings["lang"] = DEFAULT_SETTINGS["lang"]
-    if settings["rightclick_action"] not in ("menu", "putty"):
-        settings["rightclick_action"] = "menu"
-    for key in ("minimize_to_tray", "close_to_tray"):
+    if settings["rightclick_action"] not in RIGHTCLICK_ACTIONS:
+        settings["rightclick_action"] = DEFAULT_SETTINGS["rightclick_action"]
+    if settings["middle_action"] not in MIDDLE_ACTIONS:
+        settings["middle_action"] = DEFAULT_SETTINGS["middle_action"]
+    for key in ("minimize_to_tray", "close_to_tray", "ctrl_click_open"):
         settings[key] = bool(settings[key])
     order = settings["group_order"]
     settings["group_order"] = [g for g in order if isinstance(g, str)] if isinstance(order, list) else []
@@ -393,6 +412,88 @@ def terminals(widget):
     if isinstance(widget, Gtk.Paned):
         return terminals(widget.get_child1()) + terminals(widget.get_child2())
     return []
+
+
+PATH_PATTERN = r"\S+(?: \S+)*"  # words joined by single spaces; path_at() picks the file name inside
+PCRE2_UTF = 0x00080000
+PCRE2_UCP = 0x00020000
+
+
+def resolve_path(token, cwd):
+    """Absolute path of an existing file/folder named by a clicked token, else None."""
+    token = token.lstrip("'\"(<[{").rstrip(".,;:)>]}'\"*@=|")  # `ls` quotes, `ls -F` markers
+    if not token:
+        return None
+    path = os.path.normpath(os.path.join(cwd or "/", os.path.expanduser(token)))
+    return path if os.path.exists(path) else None
+
+
+def path_at(lookup, col, row, cwd):
+    """Longest existing path made of the clicked word and its neighbours (names may contain spaces).
+
+    `lookup(col, row)` is `Vte.Terminal.match_check`: the text of the PATH_PATTERN match under a cell.
+    """
+    text = lookup(col, row)[0]
+    if not text:
+        return None
+    start = col
+    while start > 0 and lookup(start - 1, row)[0] == text:
+        start -= 1
+    idx, words, pos = col - start, [], 0
+    for word in text.split(" "):
+        words.append((pos, pos + len(word)))
+        pos += len(word) + 1
+    hit = next((i for i, (a, b) in enumerate(words) if a <= idx < b), None)
+    if hit is None:
+        return None
+    runs = [(i, j) for i in range(hit + 1) for j in range(hit, len(words))]
+    for i, j in sorted(runs, key=lambda r: r[0] - r[1]):  # longest first
+        path = resolve_path(text[words[i][0]:words[j][1]], cwd)
+        if path:
+            return path
+    return None
+
+
+def handler_for(path):
+    """Default application for a file: the text editor for text, else the one for its type."""
+    if is_text_file(path):
+        ctype = "text/plain"
+    else:
+        ctype = Gio.content_type_guess(path, None)[0]
+    return Gio.AppInfo.get_default_for_type(ctype, False)
+
+
+def is_text_file(path):
+    """True for a regular file without NUL bytes in its first 4 KiB."""
+    try:
+        with open(path, "rb") as f:
+            return os.path.isfile(path) and b"\0" not in f.read(4096)
+    except OSError:
+        return False
+
+
+def terminal_cwd(term):
+    """Working directory of the shell in `term` (OSC 7, else /proc), or None."""
+    uri = term.get_current_directory_uri() if term is not None else None
+    if uri:
+        return GLib.filename_from_uri(uri)[0]
+    if term is not None and getattr(term, "shell_pid", None):
+        try:  # the shell did not report its directory: ask the kernel
+            return os.readlink(f"/proc/{term.shell_pid}/cwd")
+        except OSError:
+            pass
+    return None
+
+
+def shell_in_foreground(term):
+    """True when the terminal's shell (not a program started from it) owns the pty."""
+    pty, pid = term.get_pty(), getattr(term, "shell_pid", None)
+    if pty is None or not pid:
+        return False
+    try:
+        return os.tcgetpgrp(pty.get_fd()) == pid
+    except OSError:
+        return False
 
 
 def first_terminal(widget):
@@ -697,6 +798,8 @@ class App(Gtk.Window):
         term.connect("child-exited", lambda t, _status: self.close_pane(t))
         term.connect("focus-in-event", self.on_terminal_focus)
         term.connect("key-press-event", lambda t, ev: self.handle_shortcut(ev, t))
+        term.match_add_regex(Vte.Regex.new_for_match(
+            PATH_PATTERN, -1, PCRE2_UTF | PCRE2_UCP | PCRE2_MULTILINE), 0)
         term.connect("button-press-event", self.term_click)
         term.connect("button-release-event", self.term_release)
         return term
@@ -750,15 +853,7 @@ class App(Gtk.Window):
     def clone_tab(self, page):
         """Open a new tab next to `page`, in the same working directory."""
         term = page.last_term or first_terminal(page.root())
-        cwd = None
-        uri = term.get_current_directory_uri() if term is not None else None
-        if uri:
-            cwd = GLib.filename_from_uri(uri)[0]
-        elif term is not None and getattr(term, "shell_pid", None):
-            try:  # the shell did not report its directory: ask the kernel
-                cwd = os.readlink(f"/proc/{term.shell_pid}/cwd")
-            except OSError:
-                pass
+        cwd = terminal_cwd(term)
         self.new_tab(cwd, self.nb.page_num(page) + 1, page.custom_title)
 
     # Hovering a tab for `tab_hover_delay` seconds activates it
@@ -956,12 +1051,26 @@ class App(Gtk.Window):
 
     # --- mouse ---
     def term_click(self, term, ev):
-        if ev.button == 2:  # middle click: paste the primary selection, or swallow it
-            if self.settings["middle_paste"]:
+        if (ev.button == 1 and ev.state & Gdk.ModifierType.CONTROL_MASK
+                and self.settings["ctrl_click_open"]):
+            pad = term.get_style_context().get_padding(Gtk.StateFlags.NORMAL)
+            col = int((ev.x - pad.left) // term.get_char_width())
+            row = int((ev.y - pad.top) // term.get_char_height())
+            path = path_at(term.match_check, col, row, terminal_cwd(term))
+            if path and self.open_path(term, path):
+                return True
+        if ev.button == 2:
+            action = self.settings["middle_action"]
+            if action == "paste":
                 self.paste(term, primary=True)
+            elif action == "menu":
+                self.show_terminal_menu(term, ev)
             return True
         if ev.button != 3:
             return False
+        if self.settings["rightclick_action"] == "paste":
+            self.paste(term)
+            return True
         if self.settings["rightclick_action"] == "putty":  # copy the selection, else paste
             if term.get_has_selection():
                 term.copy_clipboard_format(Vte.Format.TEXT)
@@ -970,6 +1079,24 @@ class App(Gtk.Window):
                 self.paste(term)
             return True
         self.show_terminal_menu(term, ev)
+        return True
+
+    def open_path(self, term, token):
+        """Ctrl+click on `token`: `cd` + `ll` in a folder (only at the shell prompt), else open the file."""
+        path = resolve_path(token, terminal_cwd(term))
+        if path is None:
+            return False
+        if os.path.isdir(path):
+            if shell_in_foreground(term):
+                term.feed_child(f"cd {shlex.quote(path)} && ll\n".encode())
+            return True
+        return self.open_file(path)
+
+    def open_file(self, path):
+        app = handler_for(path)
+        if app is None:
+            return False
+        app.launch([Gio.File.new_for_path(path)], None)
         return True
 
     def term_release(self, term, ev):
@@ -1421,16 +1548,24 @@ class App(Gtk.Window):
         rc_combo = Gtk.ComboBoxText()
         rc_combo.append("menu", self.tr("rc_menu"))
         rc_combo.append("putty", self.tr("rc_putty"))
+        rc_combo.append("paste", self.tr("rc_paste"))
         rc_combo.set_active_id(self.settings["rightclick_action"])
         rc_combo.connect("changed", lambda c: self.set_setting("rightclick_action", c.get_active_id()))
 
-        rows = (("theme", theme_combo), ("language", lang_combo), ("rightclick_action", rc_combo))
+        mc_combo = Gtk.ComboBoxText()
+        for action in MIDDLE_ACTIONS:
+            mc_combo.append(action, self.tr("mc_" + action))
+        mc_combo.set_active_id(self.settings["middle_action"])
+        mc_combo.connect("changed", lambda c: self.set_setting("middle_action", c.get_active_id()))
+
+        rows = (("theme", theme_combo), ("language", lang_combo), ("rightclick_action", rc_combo),
+                ("middle_action", mc_combo))
         for i, (key, widget) in enumerate(rows):
             grid.attach(Gtk.Label(label=self.tr(key), xalign=0), 0, i, 1, 1)
             grid.attach(widget, 1, i, 1, 1)
 
         row = len(rows)
-        for key in ("copy_on_select", "middle_paste", "paste_warning"):
+        for key in ("copy_on_select", "ctrl_click_open", "paste_warning"):
             check = Gtk.CheckButton(label=self.tr(key))
             check.set_active(self.settings[key])
             check.connect("toggled", lambda c, k=key: self.set_setting(k, c.get_active()))

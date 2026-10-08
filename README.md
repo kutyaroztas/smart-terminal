@@ -29,8 +29,8 @@ button bar, configurable shortcuts, and a settings dialog.
   terminal title and a close button (the first pane is represented by the tab itself).
 - A scrollbar on the right of every terminal, linked to the scrollback (20,000 lines).
 - Search inside the terminal (`Ctrl+F`), with next/previous match.
-- Copy on select, middle-click paste, PuTTY-style right-click (copy selection / paste), or a
-  right-click context menu.
+- Copy on select; right-click and middle-click actions are configurable (paste, PuTTY-style
+  copy/paste, or the context menu).
 - Warning before pasting multiple lines ("Paste 18 lines into terminal?").
 - Switch to a tab by hovering over it for a configurable time (default 2 seconds), like WindTerm.
 
@@ -131,13 +131,28 @@ Press `Ctrl+F` to open the search bar under the terminal. Matches are highlighte
 `Enter` goes to the next match, `Shift+Enter` to the previous one, and `Esc` closes the bar.
 The search is case-insensitive unless your query contains an uppercase letter.
 
+### Open folders and files with Ctrl+click
+
+`Ctrl+click` on a file or folder name in the terminal output (for example in `ls`):
+- a **folder** is entered in the same tab (`cd <folder> && ll` is typed for you, so the listing shows the new folder; `ll` must exist as an alias/command in your shell) — only when the shell is waiting at
+  its prompt; while a program such as `vim` or `ssh` runs, nothing is typed;
+- a **text file** opens in your default text editor (the one set for `text/plain`);
+- any **other file** (image, PDF, …) opens in the default application for its type.
+
+Relative names are resolved against the shell's current directory, so the click only works if the
+shell is still in the directory where the name was printed. Names with spaces work too (also when `ls` shows them in quotes).
+Turn the feature off with **Ctrl+click opens folders and text files** in Settings.
+
 ### Copy and paste
 
 - `Ctrl+Shift+C` copies the selection, `Ctrl+Shift+V` pastes.
 - With **Copy on select** enabled, selecting text copies it immediately.
-- With **Middle-click pastes** enabled, the middle mouse button pastes the primary selection.
-- **Right-click action** is either a context menu (Copy, Paste, Select all, Find, split, rename,
-  close) or PuTTY style: right-click copies the selection if there is one, otherwise pastes.
+- **Middle-click action:** paste the primary selection (default), open the context menu, or nothing.
+- **Right-click action:** context menu (Copy, Paste, Select all, Find, split, rename, close; default),
+  PuTTY style (copy the selection if there is one, otherwise paste), or always paste the clipboard.
+  A common combination: Copy on select + right-click **paste** + middle-click **menu**. Note that
+  right-click paste sends the clipboard to the shell on any stray click (multi-line text still asks
+  first while the paste warning is on). Without a middle button (touchpad) keep the menu on right-click.
 - If **Warn before pasting multiple lines** is enabled, you are asked to confirm before text with
   more than one line is pasted. This applies to every way of pasting.
 
@@ -180,7 +195,7 @@ Examples:
 
 Click the gear icon at the bottom right.
 
-- **General:** theme, language, right-click action, copy on select, middle-click paste, multiline
+- **General:** theme, language, right-click action, middle-click action, copy on select, multiline
   paste warning, **minimize to tray**, **close button hides to tray**, **start automatically at
   login** (writes `~/.config/autostart/smart-terminal.desktop`, starts hidden in the tray when the tray
   is available, otherwise minimized), tab hover delay (seconds, `0` turns it off), a shortcut to the button editor, and
@@ -222,7 +237,7 @@ Everything is stored next to the program in `config/`:
 | File | Content |
 | --- | --- |
 | `config/buttons.json` | Your buttons: label, command, enter, group, color |
-| `config/settings.json` | Theme, language, mouse options, tray options, hover delay, group order, shortcuts |
+| `config/settings.json` | Theme, language, mouse options (incl. Ctrl+click open), tray options, hover delay, group order, shortcuts |
 
 Both files are plain JSON and can be edited by hand while the app is closed. They are listed in
 `.gitignore`, so your personal setup is never committed by accident. If a file is missing or

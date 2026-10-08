@@ -25,6 +25,8 @@ App (Gtk.Window)
              Pane (Gtk.Box) = header EventBox (penguin icon, title, close button; shown only
              when the tab has >1 pane) + body Box (Vte.Terminal + Gtk.Scrollbar)
 ```
+Path helpers (module level): `resolve_path`, `is_text_file`, `terminal_cwd`, `shell_in_foreground`,
+`PATH_PATTERN` (Vte match regex registered in `new_terminal`).
 Helpers: `pane_unit(term)` (terminal → its Pane), `is_open(term)`, `terminals(widget)`,
 `first_terminal(widget)`, `replace_child(parent, old, new)`, `accel_label`.
 
@@ -39,7 +41,8 @@ Helpers: `pane_unit(term)` (terminal → its Pane), `is_open(term)`, `terminals(
   `rename_tab`, `update_title`, `page_of`, `current`.
 - **Panes:** `split`, `make_pane`, `refresh_headers`, `close_pane`, `focused_terminal`,
   `on_terminal_focus`.
-- **Terminal:** `new_terminal`, `on_terminal_title`, `term_click/term_release`,
+- **Terminal:** `new_terminal`, `on_terminal_title`, `term_click/term_release` (buttons 2/3 follow `middle_action` / `rightclick_action`; `RIGHTCLICK_ACTIONS`, `MIDDLE_ACTIONS`),
+  `open_path/open_file` (Ctrl+click: folder → `cd … && ll`, file → default app of its type), module helpers `path_at` (longest existing path around the click, handles spaces), `handler_for`, `resolve_path`,
   `show_terminal_menu`, `paste`, `paste_text`, `confirm_paste` (multi-line warning).
 - **Shortcuts:** `match_shortcut`, `handle_shortcut`, `perform(action)`, `on_key`.
 - **Search:** `build_search_bar`, `open_search`, `run_search`, `find`, `close_search`.

@@ -12,13 +12,14 @@ configurable command buttons, split panes, themes, 5 UI languages. Single Python
 python3 smart_terminal.py                    # run the app (needs python3-gi, gir1.2-vte-2.91, gir1.2-gtk-3.0)
 python3 -m py_compile smart_terminal.py      # syntax check
 ```
-There is no automated test suite; UI is verified with scripted GTK runs + screenshots →
-`docs/testing.md`.
+`python3 -m unittest tests.test_ctrl_click -v` runs the Ctrl+click tests (needs a display). Other UI is
+verified with scripted GTK runs + screenshots → `docs/testing.md`.
 
 ## Repo map
 | Path | Purpose |
 |---|---|
 | `smart_terminal.py` | the whole app (~1500 lines); module map in `docs/architecture.md` |
+| `tests/` | unittest suite (`test_ctrl_click.py`) |
 | `config/` | per-user `buttons.json` / `settings.json` — **personal, git-ignored, never commit** |
 | `terminal-buttons.svg` (repo root), `assets/tab-icon.svg` | app icon, tab icon |
 | `docs/` | architecture, gotchas, testing, ADRs, HANDOFF, CHANGELOG |
